@@ -139,6 +139,7 @@ def main():
 		print("HERE1")
 		data_Bayesian_model = data1.drop(['DATE','AvgHEar_PC1', 'Unemp_Gap'], axis=1)
 		#data_Bayesian_model.drop(0)
+		data1_bayes = data1_bayes.round(3)
 		msk = np.random.rand(len(data1_bayes)) < 0.5
 		training_data_bayes = data1_bayes[msk]
 		testing_data_bayes = data1_bayes[~msk]
@@ -147,25 +148,27 @@ def main():
 		print(testing_data_bayes.head(10))
 		#print("HERE2")
 		#model = BayesianNetwork.from_samples(training_data_bayes, algorithm='chow-liu', state_names = data_Bayesian_model.columns.values)
-		model = BayesianNetwork.from_samples(data1_bayes, algorithm='chow-liu', state_names = data_Bayesian_model.columns.values)
+		model = BayesianNetwork.from_samples(data1_bayes, algorithm='chow-liu')#, state_names = data_Bayesian_model.columns.values)
 		#print("HERE3")
 		print(model.structure)
 		#print("HERE4")
 		#model.plot()
+		print(data1_bayes.head(10))
+		model.predict_proba([[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None]])#, [0.1, 0.1, 0.1, 0.1, 0.5, 0.1, 0.1, 0.1, None]])
 		#model.predict_proba({'USREC': 1})
-		#pdb.set_trace()
+		pdb.set_trace()
 
 	   	#Create Model
 	   	# AvgHEar_PC1	FEDFUNDS	Dur_UnEmp	Gross_Dom_Income_PC1	Unemp_Gap	Unemp_Ins_Claims_PC1	PAYEMS_PC1	PERMIT_PC1	Consumer_Expend_PC1	SP_Close_PC1	USREC
 	
 
-		# data_Bayesian_model = data1.drop(['DATE','AvgHEar_PC1', 'Unemp_Gap'], axis=1)
-		# print(data_Bayesian_model.columns.values)
-		# bayesian_model = BayesianModel([('PERMIT_PC1', 'SP_Close_PC1'), ('PERMIT_PC1', 'USREC'), ('SP_Close_PC1', 'USREC'), ('Unemp_Ins_Claims_PC1', 'USREC'), ('USREC', 'PAYEMS_PC1'), ('USREC', 'Consumer_Expend_PC1'), ('Consumer_Expend_PC1', 'PAYEMS_PC1'), ('PAYEMS_PC1', 'FEDFUNDS'), ('PAYEMS_PC1', 'Dur_UnEmp'), ('Consumer_Expend_PC1', 'FEDFUNDS'), ('Consumer_Expend_PC1', 'Dur_UnEmp'), ('Consumer_Expend_PC1', 'PAYEMS_PC1')])
-		# bayesian_model.fit(data_Bayesian_model)
-		# #bayesian_model.edges()
-		# with open('BayesModel.pickle', 'wb') as f:
-		#  			pickle.dump([bayesian_model], f)#skeleton,best_model], f)
+		data_Bayesian_model = data1.drop(['DATE','AvgHEar_PC1', 'Unemp_Gap'], axis=1)
+		print(data_Bayesian_model.columns.values)
+		bayesian_model = BayesianModel([('PERMIT_PC1', 'SP_Close_PC1'), ('PERMIT_PC1', 'USREC'), ('SP_Close_PC1', 'USREC'), ('Unemp_Ins_Claims_PC1', 'USREC'), ('USREC', 'PAYEMS_PC1'), ('USREC', 'Consumer_Expend_PC1'), ('Consumer_Expend_PC1', 'PAYEMS_PC1'), ('PAYEMS_PC1', 'FEDFUNDS'), ('PAYEMS_PC1', 'Dur_UnEmp'), ('Consumer_Expend_PC1', 'FEDFUNDS'), ('Consumer_Expend_PC1', 'Dur_UnEmp'), ('Consumer_Expend_PC1', 'PAYEMS_PC1')])
+		bayesian_model.fit(data_Bayesian_model)
+		#bayesian_model.edges()
+		with open('BayesModel.pickle', 'wb') as f:
+		 			pickle.dump([bayesian_model], f)#skeleton,best_model], f)
 
 		# pdb.set_trace()
 		# belief_propagation = BeliefPropagation(bayesian_model)
