@@ -10,6 +10,8 @@ library("igraph")
 library(bnstruct)
 library(TSA)
 library(bnlearn)
+library(tidyr)
+library(ggplot2)
 
 
 #Clear Data
@@ -89,7 +91,7 @@ current_amat <- as(pc.data, "amat")
 g_graph <- graph_from_adjacency_matrix(current_amat)
 plot.igraph(g_graph,vertex.size=25 ,main=paste("PC Estimated network with alpha 0.05"))
 
-####BN#### Need matrix?
+####BN#### #Need matrix?
 copy_Month_data = subset(copy_Month_data, select = -c(RECPROUSM156N) )
 #which(is.na(copy_Month_data), arr.ind=TRUE)
 res = gs(copy_Month_data)

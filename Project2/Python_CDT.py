@@ -6,10 +6,11 @@ import csv
 import pandas as pd
 import pdb
 import matplotlib.pyplot as plt
-import pystan
-import cdt
+#import pystan
+#import cdt
 from hmmlearn.hmm import GaussianHMM
 import warnings
+import pgmpy
 
 def main():
 #Read in data

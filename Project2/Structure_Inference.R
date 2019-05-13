@@ -23,16 +23,19 @@ rm(list=ls())
 Processed_Data <- read_csv("C:/Users/Panth/Desktop/Spring 2019/Data to Models/Project/Fred_Project/Project2/Processed_Data_PC.csv")
 
 ####Gaussian Check####
-d <- melt(Processed_data[,:])
+copy_Processed_data = Processed_Data
+copy_Processed_data = subset(copy_Processed_data, select = -c(DATE))
+d <- melt(copy_Processed_data[])
 ggplot(d,aes(x = value)) + 
   facet_wrap(~variable,scales = "free_x") + 
   geom_histogram()
 
-NonParaTrans = huge.npn(Processed_Data)
-d <- melt(NonParaTrans[,:])
+NonParaTrans = huge.npn(copy_Processed_data[,1])#, npn.func = "skeptic")
+NonParaTrans = as.data.frame(NonParaTrans)
+d <- melt(NonParaTrans)
 ggplot(d,aes(x = value)) + 
   facet_wrap(~variable,scales = "free_x") + 
-  geom_histogram()
+  geom_histogram(binwidth = 0.50)
 
 ####PC####
 copy_Processed_data = Processed_Data
