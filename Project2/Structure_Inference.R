@@ -10,12 +10,29 @@ library("igraph")
 library(bnstruct)
 library(TSA)
 library(bnlearn)
+library(tidyr)
+library(ggplot2)
+library(reshape2)
+library(huge)
+
 
 
 #Clear Data
 rm(list=ls())
 
 Processed_Data <- read_csv("C:/Users/Panth/Desktop/Spring 2019/Data to Models/Project/Fred_Project/Project2/Processed_Data_PC.csv")
+
+####Gaussian Check####
+d <- melt(Processed_data[,:])
+ggplot(d,aes(x = value)) + 
+  facet_wrap(~variable,scales = "free_x") + 
+  geom_histogram()
+
+NonParaTrans = huge.npn(Processed_Data)
+d <- melt(NonParaTrans[,:])
+ggplot(d,aes(x = value)) + 
+  facet_wrap(~variable,scales = "free_x") + 
+  geom_histogram()
 
 ####PC####
 copy_Processed_data = Processed_Data
@@ -34,7 +51,7 @@ plot.igraph(g_graph,vertex.size=25 ,main=paste("PC Estimated network with alpha 
 res = gs(copy_Processed_data)
 plot(res)
 
-rsmax2(copy_Processed_data, whitelist = NULL, blacklist = NULL, restrict = "si.hiton.pc",
+res2 = rsmax2(copy_Processed_data, whitelist = NULL, blacklist = NULL, restrict = "si.hiton.pc",
        maximize = "hc", restrict.args = list(), maximize.args = list(), debug = FALSE)
 #res2 = hc(copy_Processed_data, restart = 5, perturb=50, maxp = 2)
 plot(res2)
