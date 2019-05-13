@@ -10,11 +10,40 @@ import matplotlib.pyplot as plt
 #import cdt
 from hmmlearn.hmm import GaussianHMM
 import warnings
-import pgmpy
+#import pgmpy
+from pgmpy.estimators import ExhaustiveSearch
+from pgmpy.estimators import ConstraintBasedEstimator
+from pgmpy.estimators import HillClimbSearch
+from pgmpy.estimators import BicScore
+from pgmpy.models import BayesianModel
+from pgmpy.inference import BeliefPropagation
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from pomegranate import BayesianNetwork
+import pickle
+
+def PCA_HMM(training_data):
+	#PCA 
+	pca = PCA(n_components=4)
+	pca.fit(training_data)
+	# pca = PCA().fit(training_data)
+	# plt.plot(np.cumsum(pca.explained_variance_ratio_))
+	# plt.xlabel('number of components')
+	# plt.ylabel('cumulative explained variance');
+	# plt.show()
+	training_data_pca = pca.transform(training_data)
+	print("original shape:   ", training_data.shape)
+	print("transformed shape:", training_data_pca.shape)
+	pdb.set_trace()
+	training_data_ext = training_data_pca
+
 
 def main():
-#Read in data
+	#Read in data
 	data1 = pd.read_csv('Processed_Data_PC.csv', header=0, delimiter =',')
+	data1_ext = pd.read_csv('Processed_Data_PC_test6.csv', header=0, delimiter =',')
+	data1_bayes = pd.read_csv('Processed_Data_PC_bayes.csv', header=None, delimiter =',')
+
 	#print(data1.shape)
 	cols = list(data1.columns.values)
 	#print(cols)
@@ -30,6 +59,7 @@ def main():
 		print(col)
 
 	training_data = data1.drop('DATE',axis=1)
+	training_data_ext = data1_ext.drop('DATE',axis=1)
 	training_data_nonrec = training_data.loc[training_data['USREC'] == 0]
 	training_data_rec = training_data.loc[training_data['USREC'] == 1]
 	training_data_nonrec = training_data_nonrec.drop('USREC', axis=1)
@@ -68,9 +98,86 @@ def main():
 	print("Current Nonrecession likelihood:", hidden_states_nonrec_current1)
 
 
+	#PCA 
+	pca = PCA(n_components=4)
+	pca.fit(training_data)
+	# pca = PCA().fit(training_data)
+	# plt.plot(np.cumsum(pca.explained_variance_ratio_))
+	# plt.xlabel('number of components')
+	# plt.ylabel('cumulative explained variance');
+	# plt.show()
+	training_data_pca = pca.transform(training_data)
+	print("original shape:   ", training_data.shape)
+	print("transformed shape:", training_data_pca.shape)
+	#pdb.set_trace()
+	#training_data_ext_pca = training_data_pca
+	training_data_ext_pca = pd.DataFrame(data = training_data_pca, columns=training_data.columns.values[:4])
+
+	####pgmpy Structure and Inference####
+	try:
+		#skeleton, 
+		bayesian_model = pickle.load(open("BayesModel.pickle", "rb"))
+		#print("SUCCESS")
+		#print("Part 1) Model:    ", best_model.edges())
+	except (OSError, IOError) as e:
+		#print("Model Creating")
+		#pickle.dump(foo, open("var.pickle", "wb"))
+		
+		# est = ConstraintBasedEstimator(training_data) ####TRAINING DATA CHANGE####
+		# skeleton, sep_sets = est.estimate_skeleton()
+		# print("Part 1) Skeleton: ", skeleton.edges())
+
+		# hc = HillClimbSearch(training_data_ext)#, scoring_method=BicScore(training_data))
+		# best_model = hc.estimate()#tabu=10, white_list=skeleton.to_directed().edges())
+		# with open('HCModel.pickle', 'wb') as f:
+  		#  			pickle.dump([best_model], f)#skeleton,best_model], f)
+
+		# print("Part 1) Model:    ", best_model.edges())
+
+		# with open('HCModel.pickle', 'wb') as f:
+  		#  			pickle.dump([best_model], f)#skeleton,best_model], f)
+		print("HERE1")
+		data_Bayesian_model = data1.drop(['DATE','AvgHEar_PC1', 'Unemp_Gap'], axis=1)
+		#data_Bayesian_model.drop(0)
+		msk = np.random.rand(len(data1_bayes)) < 0.5
+		training_data_bayes = data1_bayes[msk]
+		testing_data_bayes = data1_bayes[~msk]
+		testing_data_bayes[8].replace(0, np.nan,inplace=True)
+		print(training_data_bayes.head(10))
+		print(testing_data_bayes.head(10))
+		#print("HERE2")
+		#model = BayesianNetwork.from_samples(training_data_bayes, algorithm='chow-liu', state_names = data_Bayesian_model.columns.values)
+		model = BayesianNetwork.from_samples(data1_bayes, algorithm='chow-liu', state_names = data_Bayesian_model.columns.values)
+		#print("HERE3")
+		print(model.structure)
+		#print("HERE4")
+		#model.plot()
+		#model.predict_proba({'USREC': 1})
+		#pdb.set_trace()
+
+	   	#Create Model
+	   	# AvgHEar_PC1	FEDFUNDS	Dur_UnEmp	Gross_Dom_Income_PC1	Unemp_Gap	Unemp_Ins_Claims_PC1	PAYEMS_PC1	PERMIT_PC1	Consumer_Expend_PC1	SP_Close_PC1	USREC
+	
+
+		# data_Bayesian_model = data1.drop(['DATE','AvgHEar_PC1', 'Unemp_Gap'], axis=1)
+		# print(data_Bayesian_model.columns.values)
+		# bayesian_model = BayesianModel([('PERMIT_PC1', 'SP_Close_PC1'), ('PERMIT_PC1', 'USREC'), ('SP_Close_PC1', 'USREC'), ('Unemp_Ins_Claims_PC1', 'USREC'), ('USREC', 'PAYEMS_PC1'), ('USREC', 'Consumer_Expend_PC1'), ('Consumer_Expend_PC1', 'PAYEMS_PC1'), ('PAYEMS_PC1', 'FEDFUNDS'), ('PAYEMS_PC1', 'Dur_UnEmp'), ('Consumer_Expend_PC1', 'FEDFUNDS'), ('Consumer_Expend_PC1', 'Dur_UnEmp'), ('Consumer_Expend_PC1', 'PAYEMS_PC1')])
+		# bayesian_model.fit(data_Bayesian_model)
+		# #bayesian_model.edges()
+		# with open('BayesModel.pickle', 'wb') as f:
+		#  			pickle.dump([bayesian_model], f)#skeleton,best_model], f)
+
+		# pdb.set_trace()
+		# belief_propagation = BeliefPropagation(bayesian_model)
+		# belief_propagation.map_query(variables=['USREC'], evidence={'A': 0, 'R': 0, 'G': 0, 'L': 1})
 
 
-
+   	##Inference on Model##
+	# model = BayesianModel(edges_list)
+	# for node in nodes:
+	# 	model.node[node] = nodes[node]
+	# for edge in edges:
+	# 	model.edge[edge] = edges[edge]
 
 if __name__ == '__main__' :
 	main()
