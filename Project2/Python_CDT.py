@@ -136,7 +136,7 @@ def main():
 
 		# with open('HCModel.pickle', 'wb') as f:
   		#  			pickle.dump([best_model], f)#skeleton,best_model], f)
-		print("HERE1")
+		
 		data_Bayesian_model = data1.drop(['DATE','AvgHEar_PC1', 'Unemp_Gap'], axis=1)
 		#data_Bayesian_model.drop(0)
 		data1_bayes = data1_bayes.round(3)
@@ -148,13 +148,20 @@ def main():
 		print(testing_data_bayes.head(10))
 		#print("HERE2")
 		#model = BayesianNetwork.from_samples(training_data_bayes, algorithm='chow-liu', state_names = data_Bayesian_model.columns.values)
-		model = BayesianNetwork.from_samples(data1_bayes, algorithm='chow-liu')#, state_names = data_Bayesian_model.columns.values)
+		model = BayesianNetwork.from_samples(data1_bayes, algorithm='chow-liu', state_names = data_Bayesian_model.columns.values)
 		#print("HERE3")
 		print(model.structure)
 		#print("HERE4")
 		#model.plot()
 		print(data1_bayes.head(10))
 		model.predict_proba([[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None]])#, [0.1, 0.1, 0.1, 0.1, 0.5, 0.1, 0.1, 0.1, None]])
+		print(model.predict_proba([[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None]]))
+		print(model.predict([[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None]]))
+		#model.predict_proba([[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None],[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None], [1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None]])#, [0.1, 0.1, 0.1, 0.1, 0.5, 0.1, 0.1, 0.1, None]])
+		#model.predict([[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None],[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None], [1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None]])#, [0.1, 0.1, 0.1, 0.1, 0.5, 0.1, 0.1, 0.1, None]])
+		query_array = np.asarray([[1.45, 13.7, 1.118, None, -0.011, -0.113, 0.009, 0.111, None],[2.00, 17.0, 3.822, -0.121, 0.000, 0.166, 0.026, 0.195, None], [2.33,  15.8,  6.694, -0.204,  0.021,  0.221,  0.050,  0.231,  None]])
+		answer_array = np.asarray(model.predict(query_array))
+		print("Answered Query:", answer_array)
 		#model.predict_proba({'USREC': 1})
 		pdb.set_trace()
 

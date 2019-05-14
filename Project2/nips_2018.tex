@@ -25,8 +25,9 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
+\usepackage{graphicx}
 
-\title{Formatting instructions for NeurIPS 2018}
+\title{Learning and Inference Through Graphical Models on Economic Data with a Particular Focus on Recession Indicators}
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -71,336 +72,194 @@
 \maketitle
 
 \begin{abstract}
-  The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on
-  both the left- and right-hand margins. Use 10~point type, with a vertical
-  spacing (leading) of 11~points.  The word \textbf{Abstract} must be centered,
-  bold, and in point size 12. Two line spaces precede the abstract. The abstract
-  must be limited to one paragraph.
+  This paper explores the use of various graphical model packages such as PC and Glasso (in R) and pgympy and pomegranate (in Python) on performing learning and inference tasks on economic data obtained from the Federal Reserve Bank of St. Louis. Structural learning is done primarily in R while Python is used to perform inference queries such as the probabilities of various features given others.
 \end{abstract}
 
 \section{Introduction}
 
-NeurIPS requires electronic submissions.  The electronic submission site is
-\begin{center}
-  \url{https://cmt.research.microsoft.com/NeurIPS2018/}
-\end{center}
-
-Please read the instructions below carefully and follow them faithfully.
-
-\subsection{Style}
-
-Papers to be submitted to NeurIPS 2018 must be prepared according to the
-instructions presented here. Papers may only be up to eight pages long,
-including figures. Additional pages \emph{containing only acknowledgments and/or
-  cited references} are allowed. Papers that exceed eight pages of content
-(ignoring references) will not be reviewed, or in any other way considered for
-presentation at the conference.
-
-The margins in 2018 are the same as since 2007, which allow for $\sim$$15\%$
-more words in the paper compared to earlier years.
-
-Authors are required to use the NeurIPS \LaTeX{} style files obtainable at the
-NeurIPS website as indicated below. Please make sure you use the current files
-and not previous versions. Tweaking the style files may be grounds for
-rejection.
-
-\subsection{Retrieval of style files}
-
-The style files for NeurIPS and other conference information are available on
-the World Wide Web at
-\begin{center}
-  \url{http://www.neurips.cc/}
-\end{center}
-The file \verb+neurips_2018.pdf+ contains these instructions and illustrates the
-various formatting requirements your NeurIPS paper must satisfy.
-
-The only supported style file for NeurIPS 2018 is \verb+neurips_2018.sty+,
-rewritten for \LaTeXe{}.  \textbf{Previous style files for \LaTeX{} 2.09,
-  Microsoft Word, and RTF are no longer supported!}
-
-The \LaTeX{} style file contains three optional arguments: \verb+final+, which
-creates a camera-ready copy, \verb+preprint+, which creates a preprint for
-submission to, e.g., arXiv, and \verb+nonatbib+, which will not load the
-\verb+natbib+ package for you in case of package clash.
-
-\paragraph{New preprint option for 2018}
-If you wish to post a preprint of your work online, e.g., on arXiv, using the
-NeurIPS style, please use the \verb+preprint+ option. This will create a
-nonanonymized version of your work with the text ``Preprint. Work in progress.''
-in the footer. This version may be distributed as you see fit. Please \textbf{do
-  not} use the \verb+final+ option, which should \textbf{only} be used for
-papers accepted to NeurIPS.
-
-At submission time, please omit the \verb+final+ and \verb+preprint+
-options. This will anonymize your submission and add line numbers to aid
-review. Please do \emph{not} refer to these line numbers in your paper as they
-will be removed during generation of camera-ready copies.
-
-The file \verb+neurips_2018.tex+ may be used as a ``shell'' for writing your
-paper. All you have to do is replace the author, title, abstract, and text of
-the paper with your own.
-
-The formatting instructions contained in these style files are summarized in
-Sections \ref{gen_inst}, \ref{headings}, and \ref{others} below.
+This project focuses on the use of data obtained from the Federal Reserve Bank of St. Louis. A number of distinct data sets were obtained focusing on the period from 1960 through the present (2019). These data sets were then preprocessed as applicable to align the data available, seasonally adjust data, and convert level data to Year-Over-Yead Change (YOY). Once the data was preprocessed, it was ready to be used for structure and parameter learning of the underlying graph as well as for inference. Structure learning was done primarily in R using the PC and Glasso packages to determine the graph structure of the economic indicators. A Bayesian model from the Python package Pomegranate was used to perform inference on the dataset. Alternative methods for learning and inference are also discussed and demonstrated in the provided code repository.
 
 \section{Data}
 \label{gen_inst}
 
-The text must be confined within a rectangle 5.5~inches (33~picas) wide and
-9~inches (54~picas) long. The left margin is 1.5~inch (9~picas).  Use 10~point
-type with a vertical spacing (leading) of 11~points.  Times New Roman is the
-preferred typeface throughout, and will be selected for you by default.
-Paragraphs are separated by \nicefrac{1}{2}~line space (5.5 points), with no
-indentation.
+The Federal Reserve Bank of St. Louis has a variety of data on its website that covers a broad range of economic markers such as the unemployment rate, gross domestic income of employees, payroll numbers for different industries, and so forth. Through research on economic markers related to recessions and the researcher's intuition, a number of datasets as listed below were selected for use in this project. These datasets did not all cover the same time periods, some that had seasonality to them were not seasonally adjusted, and other factors required a significant level of processing to be done to the data before any learning or inference could be performed. These methods are discussed in section 2.2.
+\subsection{Dataset}
 
-The paper title should be 17~point, initial caps/lower case, bold, centered
-between two horizontal rules. The top rule should be 4~points thick and the
-bottom rule should be 1~point thick. Allow \nicefrac{1}{4}~inch space above and
-below the title to rules. All pages should start at 1~inch (6~picas) from the
-top of the page.
+The items below begin with their series ID on the FRED website and are followed by a description of their attributes (frequency, units, time period, seasonal adjustment, and so forth).
+\begin{itemize}
+	\item 1.	UNRATE: Civilian Unemployment Rate, Monthly, Percent, Seasonally Adjusted, 1948-Present, Node: Unemp\_Gap
+	\item 2.	NROU: Natural Rate of Unemployment (Long-Term), Quarter, Percent, Not Adj, Q1 1949-Q4 2029  (forecasted), Node: Unemp\_Gap
+	\item 3.	USREC: NBER based Recession Indicators, Monthly, 1/0, Dec 1854-Apr 2019, Node: USREC
+	\item 4. AHEMAN: Average Hourly Earnings of Production and Nonsupervisory Employees: Manufacturing, Month, \$/hr and YOY Change, Not Adj, Jan 1939-Apr 2019, Node: AvgHEar
+	\item 5.	FEDFUNDS: Effective Federal Funds Rate, Percent, Monthly, Not Seasonally Adjusted, July 1954-Apr 2019, Node: FEDFUNDS
+	\item 6.	PCECC96 Real Personal Consumption Expenditures, level (\$), Quarterly, Seasonally Adjusted Annual Rate, Q1 1947-2019, Node: Consumer\_Expend
+	\item 7.	ICNSA: Initial Claims for Unemployment Insurance, Number, Not Adjusted, Weekly 1967-2019, Node: Unemp\_Ins\_Claims
+	\item 8.	M08297USM548NNBR: Initial Claims for Unemployment Insurance, 1000s of claims, Not Adj, Month, Aug1945-Mar 1969, Node: Unemp\_Ins\_Claims
+	\item 9.	PERMIT: New Private Housing Units Authorized by Building Permits, Monthly, Seasonally Adjusted Annual Rate, Jan 1960-Mar 2019, Node: PERMIT
+	\item 10. S\verb|&|P 500, Monthly, Yahoo, Jan 1950-May 2019, Node: SP\_Close
+	\item 11. UEMPMEAN: Average (Mean) Duration of Unemployment, Monthly, Seasonally Adjusted, Jan 1948-Apr 2019, lags (Its value is inverted so that it gives a higher reading during expansion and vice versa.), Node: Unemp\_Gap
+	\item 12. PAYEMS, All Employees: Total Nonfarm Payrolls, Monthly, Seasonally Adjusted, Jan 1939-Apr 2019, Economy’s current state, shows net hiring, Node: PAYEMS
+	\item 13. A4102C1Q027SBEA: Gross domestic income: Compensation of employees, paid: Wages and Salaries, Quarterly, Seasonally Adjusted, YOY \%, Q1 1947-Q1 2019, Node: Gross\_Dom\_Income
+\end{itemize}
 
-For the final version, authors' names are set in boldface, and each name is
-centered above the corresponding address. The lead author's name is to be listed
-first (left-most), and the co-authors' names (if different address) are set to
-follow. If there is only one co-author, list both author and co-author side by
-side.
+Some of these items were believed to have a lead (ex. PERMIT, S\&P 500, ICSNA) or lag (ex. PAYEMS, UEMPMEAN) relationship with recessions and thus were included in the hopes that they may help determine if a recession may be approaching or to determine if a recession is currently ongoing based on the tangentially related datasets. The USREC data series was used as the "true" label for when a recession was or was not occuring.
 
-Please pay special attention to the instructions in Section \ref{others}
-regarding figures, tables, acknowledgments, and references.
+\subsection{Pre-Processing Data}
+\begin{enumerate}
+	\item \textbf{Align Dates of Data:}  \\
+	\\First, the dates that the each data series overed had to be aligned. This was done by checking the start and end of each data set and determining that all of the data covered the period from January 1960 through the present (April 2019). As a result, the data was cleaned to remove any data outside of these periods.
+	\item \textbf{Convert Quarterly/Weekly Data to Monthly:}\\
+	\\ This step was completed in R using spline interpolation on the PCECC96, A4102C1Q027SBEA, and NROU datasets. All of these datasets were in terms of quarterly data and needed to be interpoled to obtain monthly data. The ICSNA dataset had a weekly frequency so for that, the dataset was plotted on FRED's website, the frequency of the graph was selected to show monthly values, and then the corresponding dataset was downloaded and added to the complete dataset.
+	\item \textbf{Seasonally Adjust Data:}\\
+	\\ There were a number of data series that were not seasonally adjusted. As a result, these series were plotted to determine if any seasonality existed in the series. The only non-seasonally adjusted dataset that showed seasonality were the M08297USM548NNBR and ICSNA datasets which covered the same information (Initial Unemployment Claims) for two time periods. These two datasets were combined to form one complete dataset from 1960 through the present for this information. In order to address the seasonality, the "seas" package in R was used. As shown below, it is apparent that there is some seasonality to the data, particularly that the data is periodic over the course of the year as shown by the periodogram for the unadjusted data. After using the predict function from the seas package, the seasonality appeared to be adjusted as shown in the subsequent graphs.
 
-\section{Methods}
+\begin{figure*}
+   \centering
+
+\newcommand{\photo}[1]{%
+    \includegraphics[width=7cm, height=\textheight, keepaspectratio]{#1}
+}
+
+\begin{tabular}{rcc}
+    \photo{Season_Unadj} &  \photo{Freq_Unadj} \\
+    \photo{Season_Adj} &  \photo{Freq_Adj} \\
+\end{tabular}
+	\caption{Figure: Top: Seasonally Unadjusted Data (left) and Periodogram (Right), Bottom: Seasonally Adjusted Data (left) and Periodogram (Right)}
+\end{figure*}
+
+	\item \textbf{Convert Data to Year-Over-Year \% Change:}\\
+	\\The last step of preprocessing the data was to convert some of the data to Year-Over-Year Percent Change so that the model may interpret changes in the data instead of just the raw values. For example, take the S\&P500 which, for a long time, has been continuously increasing. During periods of economic downturns however, the value of the index doesn't go down to the same level, but there is typically a negative change in the value from its immediate predecessors. Going through the data, it was determined that YOY changes would be more appropriate measures to learn for the S\&P500, PCECC96, PERMIT, PAYEMS, M08297USM548NNBR, and A4102C1Q027SBEA\_PC1 (the last of which was already in YOY Change from FRED). In the subsequent analysis, any data that can been converted to YOY Change will have a "\_PC1" appended to the end of its name.
+\end{enumerate}
+
+
+\section{Learning}
 \label{headings}
 
-All headings should be lower case (except for first word and proper nouns),
-flush left, and bold.
+The primary focus for learning this dataset was to perform structural learning to determine how the features of the dataset related to each other. For this task a number of methods were attempted such as rsmax2 and gs from the R bnlearn package, which are a hybrid structure learning algorithm (using Max-Min Hill Climbing) and a Constraint-based structure learning algorithm (based on Grow-Shrink), respectively. The code for learning those structures may be found in the Structure\_Inference.R script on this project's repository. Additionally, PC and Glasso were performed on the dataset and the results are shown below.
 
 First-level headings should be in 12-point type.
 
-\subsection{Analysis}
+\subsection{PC}
 
-Second-level headings should be in 10-point type.
+The PC algorithm provided a graph structure as shown below. The shown structure uses an alpha of 0.005, which was obtained following trials with alphas between [0.001, 0.5] and was determined to preserve the most edges between the results of the various alphas. This aligns with papers that indicate the Average Structural Hamming Distance (SHD) appears to be lower for alphas between 0.005 and 0.01 (http://www.jmlr.org/papers/volume8/kalisch07a/kalisch07a.pdf). While the structure does not reflect the relationships expected as discussed above (leading and lagging variables as related to recession), the structure appears to indicate an alternate result that should have also been expected: these variables may not have a causal relationship with recessions but the recession node (US\_REC) may have a causal relationship with them (such as the Unemployment Insurance Claims increasing when a recession hits).
 
-\subsubsection{Headings: third level}
+\begin{figure*}[ht]
+   \centering
 
-Third-level headings should be in 10-point type.
+\newcommand{\photo}[1]{%
+    \includegraphics[width=9cm, height=6cm]{#1}
+}
 
-\paragraph{Paragraphs}
+\begin{tabular}{rcc}
+    \photo{PC_graph} \\
+\end{tabular}
+	\caption{Figure: Network Obtained from PC Algorithm}
+\end{figure*}
 
-There is also a \verb+\paragraph+ command available, which sets the heading in
-bold, flush left, and inline with the text, with the heading followed by 1\,em
-of space.
 
-\section{Analysis}
+\subsection{Glasso}
 
-\section{Results}
+Prior to running Glasso, each data series was plotted on a histogram to determine if the data was gaussian. The results of that analysis is shown below. Although some of the data looks quite Gaussian (Ex. PERMIT\_PC1), others are not quite so clear. As a result, the nonparanormal (npn) transform was performed on that data prior to running Glasso to ensure Gaussian distributions as shown in the resulting histograms. 
+
+\begin{figure*}[ht]
+   \centering
+
+\newcommand{\photo}[1]{%
+    \includegraphics[width=5.5cm, height=5.5cm]{#1}
+}
+
+\begin{tabular}{rcc}
+    \photo{Gaussian_yes} &  \photo{Gaussianized_Data} \\
+\end{tabular}
+	\caption{Figure: left: Histograms of Data, right: Histograms of Data Post-NPN Transform}
+\end{figure*}
+
+
+When running the Glasso algorithm, the BIC score was computed in order to determine the best rho parameter to use for determining the structure of the graph. As shown in the chart below, the best rho was determined to be approximately 0.118 and that is the value that was used to construct the structure of the graph shown below.
+
+\begin{figure*}[ht]
+   \centering
+
+\newcommand{\photo}[1]{%
+    \includegraphics[width=8cm, height=6cm]{#1}
+}
+
+\begin{tabular}{rcc}
+    \photo{Tuning_G} & \photo{Glasso_Plot_2} \\
+\end{tabular}
+	\caption{Figure: left: BIC Score Tuning, right: Glasso Graph}
+\end{figure*}
+
+The results from running Glasso do not entirely agree with the results of PC algorithm or the structures learned using the bnlearn package as shown in the figure below. It is suspected that this result may be due to the assumption of a Gaussian distribution on some of the data or due to the nonparanormal transform run on the data that appeared to not be Gaussian. 
+
+\section{Inference}
+Inference could be performed in several different ways for this dataset. First, the dataset was used to learn a Bayesian model through the pgmpy package. The plan was to use belief propogation map\_queries and maximum likelihood estimators provided by the package to perform inference tasks on the data. Possible questions would be what is the probability of a recession given that the YOY change in the S\&P500 is -0.5\% and the unemployment gap has grown by 5.4\%. Fitting the data set to the bayesian model appeared to be intractable however unless only two features were used as the model appeared to continue training for several hours without completing. As a result, the pomegranate package was used to create a bayesian network on which inference could be performed using maximum likelihood estimation. As shown in the image below, queries could be constructed on incomplete data and the model would determine (predict) the value or, using the predict\_proba function, could determine the probabilities of the data.
+
+\subsection{Belief propagation}
+
+Using belief propagation and mle, the model was able to perform inference to answer queries as those shown in the example below. Additionally, using the predict\_proba function shown in the code, the probabilities of each graph given the evidence can be obtained. 
+
+\begin{figure*}[ht]
+   \centering
+
+\newcommand{\photo}[1]{%
+    \includegraphics[width=9cm, height=6cm]{#1}
+}
+
+\begin{tabular}{rcc}
+    \photo{Inference_BP} \\
+\end{tabular}
+	\caption{Query on Bayesian Model, Query-Array has 'None' for variables of interest (last is USREC), Answer-Array provides the predicted value for those}
+\end{figure*}
+
+Due to the difficulty of training the models to perform inference, dimensionality reduction methods were considered. Using PCA, it was found that the dimensions of the data could be reduced down to four components. For the purposes of determining how the specific features we have relate to each other, dimensionality reduction is not particularly usable because we lose the actual features and can no longer perform queries such as what is the predicted change in the S\&P500 given that the Federal Funds rate has changed by a given amount. However, for simply classification tasks, such as determining whether or not we are currently in a recession or may be headed towards a recession given the current economic indicators in the dataset (a binary task), we may be able to use PCA or another dimensionality reduction method such as manifold reduction.
+
+\begin{figure*}[ht]
+   \centering
+
+\newcommand{\photo}[1]{%
+    \includegraphics[width=5cm, height=5cm]{#1}
+}
+
+\begin{tabular}{rcc}
+    \photo{PCA_Elbow} \\
+\end{tabular}
+	\caption{PCA on dataset, Elbow at about 4 Components indicating that data may be reduced to 4 dimensions}
+\end{figure*}
+
+\subsection{HMM classification using likelihood}
+From the previous information, it was determined that another possible inference task would be to test if this model is capable of determining if a recession is occuring or not (or, subsequently, if a recession is imminent). For this, two HMMs were trained, one on recession data and the other on non-recession data, and then were used to calculate the likelihood, given some segment of data for testing, of a recession. For this task, the model performed quite well and consistently yielded significantly higher likelihoods for the correct classifier (i.e. it gave a higher likelihood on the non-recession model than the recession model for data from the past 12 months, but the opposite for data such as from the period of the Great Recession). Example on data from past 12 months shown below:
+
+
+\begin{figure*}[ht]
+   \centering
+
+\newcommand{\photo}[1]{%
+    \includegraphics[width=5cm, height=0.5cm]{#1}
+}
+
+\begin{tabular}{rcc}
+    \photo{HMM_Recession} \\
+\end{tabular}
+	\caption{HMM for No-Recession has greater likelihood compared to HMM for Recession for data from past 12 months}
+\end{figure*}
+
 
 \section{Conclusion}
+In this paper, the PC and Glasso packages were used to perform structure learning on the economic dataset obtained from the  Federal Reserve Bank of St. Louis. Additionally, the hmmlearn and pomegranate packages in python were used to perform inference in the form of classification and prediction queries on the dataset. There were several challenges with the tasks outlined above, including the difficulty of using graphical model packages, especially in python, as easily as other machine learning packages such as scikit-learn. Furthermore, training in python appeared to take significantly longer than in R, possibly due to the packages in python not being quite as powerful as those in R.  Additional tasks that could be done in the future include creating a graphical model based on an individual's understand of economical data and performing inference on those graphs. The graph that the author of this paper would consider is shown below.
 
-\section{Citations, figures, tables, references}
-\label{others}
+\begin{figure*}
+   \centering
 
-These instructions apply to everyone.
+\newcommand{\photo}[1]{%
+    \includegraphics[width=9cm, height=6cm]{#1}
+}
 
-\subsection{Citations within the text}
+\begin{tabular}{rcc}
+    \photo{Hyp_Graph} \\
+\end{tabular}
+	\caption{Graphical Model based onf lead/lag variables for recession, which could be used for subsequent inference tasks}
+\end{figure*}
 
-The \verb+natbib+ package will be loaded for you by default.  Citations may be
-author/year or numeric, as long as you maintain internal consistency.  As to the
-format of the references themselves, any style is acceptable as long as it is
-used consistently.
-
-The documentation for \verb+natbib+ may be found at
-\begin{center}
-  \url{http://mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf}
-\end{center}
-Of note is the command \verb+\citet+, which produces citations appropriate for
-use in inline text.  For example,
-\begin{verbatim}
-   \citet{hasselmo} investigated\dots
-\end{verbatim}
-produces
-\begin{quote}
-  Hasselmo, et al.\ (1995) investigated\dots
-\end{quote}
-
-If you wish to load the \verb+natbib+ package with options, you may add the
-following before loading the \verb+neurips_2018+ package:
-\begin{verbatim}
-   \PassOptionsToPackage{options}{natbib}
-\end{verbatim}
-
-If \verb+natbib+ clashes with another package you load, you can add the optional
-argument \verb+nonatbib+ when loading the style file:
-\begin{verbatim}
-   \usepackage[nonatbib]{neurips_2018}
-\end{verbatim}
-
-As submission is double blind, refer to your own published work in the third
-person. That is, use ``In the previous work of Jones et al.\ [4],'' not ``In our
-previous work [4].'' If you cite your other papers that are not widely available
-(e.g., a journal paper under review), use anonymous author names in the
-citation, e.g., an author of the form ``A.\ Anonymous.''
-
-\subsection{Footnotes}
-
-Footnotes should be used sparingly.  If you do require a footnote, indicate
-footnotes with a number\footnote{Sample of the first footnote.} in the
-text. Place the footnotes at the bottom of the page on which they appear.
-Precede the footnote with a horizontal rule of 2~inches (12~picas).
-
-Note that footnotes are properly typeset \emph{after} punctuation
-marks.\footnote{As in this example.}
-
-\subsection{Figures}
-
-\begin{figure}
-  \centering
-  \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
-  \caption{Sample figure caption.}
-\end{figure}
-
-All artwork must be neat, clean, and legible. Lines should be dark enough for
-purposes of reproduction. The figure number and caption always appear after the
-figure. Place one line space before the figure caption and one line space after
-the figure. The figure caption should be lower case (except for first word and
-proper nouns); figures are numbered consecutively.
-
-You may use color figures.  However, it is best for the figure captions and the
-paper body to be legible if the paper is printed in either black/white or in
-color.
-
-\subsection{Tables}
-
-All tables must be centered, neat, clean and legible.  The table number and
-title always appear before the table.  See Table~\ref{sample-table}.
-
-Place one line space before the table title, one line space after the
-table title, and one line space after the table. The table title must
-be lower case (except for first word and proper nouns); tables are
-numbered consecutively.
-
-Note that publication-quality tables \emph{do not contain vertical rules.} We
-strongly suggest the use of the \verb+booktabs+ package, which allows for
-typesetting high-quality, professional tables:
-\begin{center}
-  \url{https://www.ctan.org/pkg/booktabs}
-\end{center}
-This package was used to typeset Table~\ref{sample-table}.
-
-\begin{table}
-  \caption{Sample table title}
-  \label{sample-table}
-  \centering
-  \begin{tabular}{lll}
-    \toprule
-    \multicolumn{2}{c}{Part}                   \\
-    \cmidrule(r){1-2}
-    Name     & Description     & Size ($\mu$m) \\
-    \midrule
-    Dendrite & Input terminal  & $\sim$100     \\
-    Axon     & Output terminal & $\sim$10      \\
-    Soma     & Cell body       & up to $10^6$  \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\section{Final instructions}
-
-Do not change any aspects of the formatting parameters in the style files.  In
-particular, do not modify the width or length of the rectangle the text should
-fit into, and do not change font sizes (except perhaps in the
-\textbf{References} section; see below). Please note that pages should be
-numbered.
-
-\section{Preparing PDF files}
-
-Please prepare submission files with paper size ``US Letter,'' and not, for
-example, ``A4.''
-
-Fonts were the main cause of problems in the past years. Your PDF file must only
-contain Type 1 or Embedded TrueType fonts. Here are a few instructions to
-achieve this.
-
-\begin{itemize}
-
-\item You should directly generate PDF files using \verb+pdflatex+.
-
-\item You can check which fonts a PDF files uses.  In Acrobat Reader, select the
-  menu Files$>$Document Properties$>$Fonts and select Show All Fonts. You can
-  also use the program \verb+pdffonts+ which comes with \verb+xpdf+ and is
-  available out-of-the-box on most Linux machines.
-
-\item The IEEE has recommendations for generating PDF files whose fonts are also
-  acceptable for NeurIPS. Please see
-  \url{http://www.emfield.org/icuwb2010/downloads/IEEE-PDF-SpecV32.pdf}
-
-\item \verb+xfig+ "patterned" shapes are implemented with bitmap fonts.  Use
-  "solid" shapes instead.
-
-\item The \verb+\bbold+ package almost always uses bitmap fonts.  You should use
-  the equivalent AMS Fonts:
-\begin{verbatim}
-   \usepackage{amsfonts}
-\end{verbatim}
-followed by, e.g., \verb+\mathbb{R}+, \verb+\mathbb{N}+, or \verb+\mathbb{C}+
-for $\mathbb{R}$, $\mathbb{N}$ or $\mathbb{C}$.  You can also use the following
-workaround for reals, natural and complex:
-\begin{verbatim}
-   \newcommand{\RR}{I\!\!R} %real numbers
-   \newcommand{\Nat}{I\!\!N} %natural numbers
-   \newcommand{\CC}{I\!\!\!\!C} %complex numbers
-\end{verbatim}
-Note that \verb+amsfonts+ is automatically loaded by the \verb+amssymb+ package.
-
-\end{itemize}
-
-If your file contains type 3 fonts or non embedded TrueType fonts, we will ask
-you to fix it.
-
-\subsection{Margins in \LaTeX{}}
-
-Most of the margin problems come from figures positioned by hand using
-\verb+\special+ or other commands. We suggest using the command
-\verb+\includegraphics+ from the \verb+graphicx+ package. Always specify the
-figure width as a multiple of the line width as in the example below:
-\begin{verbatim}
-   \usepackage[pdftex]{graphicx} ...
-   \includegraphics[width=0.8\linewidth]{myfile.pdf}
-\end{verbatim}
-See Section 4.4 in the graphics bundle documentation
-(\url{http://mirrors.ctan.org/macros/latex/required/graphics/grfguide.pdf})
-
-A number of width problems arise when \LaTeX{} cannot properly hyphenate a
-line. Please give LaTeX hyphenation hints using the \verb+\-+ command when
-necessary.
-
-\subsubsection*{Acknowledgments}
-
-Use unnumbered third level headings for the acknowledgments. All acknowledgments
-go at the end of the paper. Do not include acknowledgments in the anonymized
-submission, only in the final paper.
-
-\section*{References}
-
-References follow the acknowledgments. Use unnumbered first-level heading for
-the references. Any choice of citation style is acceptable as long as you are
-consistent. It is permissible to reduce the font size to \verb+small+ (9 point)
-when listing the references. {\bf Remember that you can use more than eight
-  pages as long as the additional pages contain \emph{only} cited references.}
-\medskip
-
-\small
-
-[1] Alexander, J.A.\ \& Mozer, M.C.\ (1995) Template-based algorithms for
-connectionist rule extraction. In G.\ Tesauro, D.S.\ Touretzky and T.K.\ Leen
-(eds.), {\it Advances in Neural Information Processing Systems 7},
-pp.\ 609--616. Cambridge, MA: MIT Press.
-
-[2] Bower, J.M.\ \& Beeman, D.\ (1995) {\it The Book of GENESIS: Exploring
-  Realistic Neural Models with the GEneral NEural SImulation System.}  New York:
-TELOS/Springer--Verlag.
-
-[3] Hasselmo, M.E., Schnell, E.\ \& Barkai, E.\ (1995) Dynamics of learning and
-recall at excitatory recurrent synapses and cholinergic modulation in rat
-hippocampal region CA3. {\it Journal of Neuroscience} {\bf 15}(7):5249-5262.
 
 \end{document}

@@ -45,10 +45,10 @@
   suffStat <- list(C = cor(copy_Processed_data), n = nrow(copy_Processed_data))
   pc.data <- pc(suffStat, indepTest = gaussCItest, labels = names(copy_Processed_data), alpha = 0.05)
   #Plot results of pc algorithm
-  plot(pc.data, main=paste("PC Estimated network with alpha: ", 0.05))
+  plot(pc.data, main=paste("PC Estimated network with alpha: ", 0.005))
   current_amat <- as(pc.data, "amat")
   g_graph <- graph_from_adjacency_matrix(current_amat)
-  plot.igraph(g_graph,vertex.size=25 ,main=paste("PC Estimated Network with Alpha=0.05"))
+  plot.igraph(g_graph,vertex.size=25 ,main=paste("PC Estimated Network with Alpha=0.005"))
   
   ####BN#### Need matrix?
   #copy_Month_data = subset(copy_Processed_data, select = -c(RECPROUSM156N) )
