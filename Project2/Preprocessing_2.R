@@ -17,6 +17,7 @@ library(ggplot2)
 #Clear Data
 rm(list=ls())
 
+#Import Data
 GSPC <- read_csv("C:/Users/Panth/Desktop/Spring 2019/Data to Models/Project/Fred_Project/Data/GSPC.csv")
 Monthly_data<- read_excel("C:/Users/Panth/Desktop/Spring 2019/Data to Models/Project/Fred_Project/Data/5919.xls", sheet = "Monthly")
 Quarterly_data<- read_excel("C:/Users/Panth/Desktop/Spring 2019/Data to Models/Project/Fred_Project/Data/5919.xls", sheet = "Quarterly")
@@ -34,68 +35,32 @@ monthly_income_interpol_df = data.frame(DATE=monthly_seq, monthly_income_interpo
 #Nat Rate Unemp
 monthly_nat_rate_unemp = Quarterly_data[c("DATE", "NROU")]
 monthly_nat_rate_unemp_interpol_df = data.frame(DATE=monthly_seq, monthly_nat_rate_unemp_interpol=spline(monthly_nat_rate_unemp, method = "fmm", xout=monthly_seq)$y)
-####PC####
-copy_Month_data = Monthly_data
-copy_Month_data = subset(copy_Month_data, select = -c(DATE) )
-suffStat <- list(C = cor(copy_Month_data), n = nrow(copy_Month_data))
-pc.data <- pc(suffStat, indepTest = gaussCItest, labels = names(copy_Month_data), alpha = 0.05)
-#Plot results of pc algorithm
-plot(pc.data, main=paste("PC Estimated network with alpha: ", 0.05))
-current_amat <- as(pc.data, "amat")
-g_graph <- graph_from_adjacency_matrix(current_amat)
-plot.igraph(g_graph,vertex.size=25 ,main=paste("PC Estimated network with alpha 0.05"))
-
-####BN#### Need matrix?
-copy_Month_data = subset(copy_Month_data, select = -c(RECPROUSM156N) )
-#which(is.na(copy_Month_data), arr.ind=TRUE)
-res = gs(copy_Month_data)
-plot(res)
-#dataset <- BNDataset(data = Monthly_data,  discreteness = rep(F, ncol(Monthly_data)), variables = names(Monthly_data), node.sizes = rep(3, ncol(Monthly_data)))
-#BN(Monthly_data)
-#learn.network(Monthly_data)
 
 ####Convert Weekly to Monthly####
 #weekly_unemp_ins_data = Weekly_data$ICNSA
 #monthly_unemp_ins_data = weekToMonth(weekly_unemp_ins_data, year = 1968, wkIndex = 1, wkMethod = "ISO")
 #monthly_unemp_ins_data = transform(monthly_unemp_ins_data, value = value/4)
 
-####Add Data to Monthly####
+####Add Converted Data to Monthly Dataset####
 Monthly_data['Consumer_Expend']= monthly_consumer_expend_interpol_df['monthly_consumer_expend_interpol']
 Monthly_data['Gross_Dom_Income_PC1'] = monthly_income_interpol_df['monthly_income_interpol']
 Monthly_data['Natural_Rate_Unemp'] = monthly_nat_rate_unemp_interpol_df['monthly_nat_rate_unemp_interpol']
 Monthly_data['SP_Close'] = GSPC['SP_Close']
 
-#Clean Environment
+#Clean Environment of temporary variables
 rm(GSPC, monthly_consumer_expend, monthly_consumer_expend_interpol_df, monthly_income, monthly_income_interpol_df, monthly_nat_rate_unemp, monthly_nat_rate_unemp_interpol_df)
 
-####Seasonal Data Processing####
+####Seasonal Data Processing (Adjust for Seasonansality####
+#Convert to time series
 ts_UnEmpClaims = ts(Monthly_data$M08297USM548NNBR, start = as.yearmon(Monthly_data$DATE[1]), freq = 12)
+#Use seas to determine seasonality for subsequent prediction
 seas_unempclaims = seas(ts_UnEmpClaims)
 plot(ts_UnEmpClaims)
-p1 = periodogram(ts_UnEmpClaims)
+p1 = periodogram(ts_UnEmpClaims) #Determine frequency of seasonality
+#Adjust for seasona
 ts_UnEmpClaims_Adj = predict(seas_unempclaims, newdata = ts_UnEmpClaims)
 p2 = periodogram(ts_UnEmpClaims_Adj)
-plot(ts_UnEmpClaims_Adj)
+plot(ts_UnEmpClaims_Adj) #Confirm Adjustment by Plotting
 
-#Unemp Gap#
+####Calcylatw Unemp Gap####
 Monthly_data['Unemp_Gap'] = Monthly_data['Natural_Rate_Unemp'] - Monthly_data['UNRATE']
-
-####PC####
-copy_Month_data = Monthly_data
-copy_Month_data = subset(copy_Month_data, select = -c(DATE) )
-suffStat <- list(C = cor(copy_Month_data), n = nrow(copy_Month_data))
-pc.data <- pc(suffStat, indepTest = gaussCItest, labels = names(copy_Month_data), alpha = 0.05)
-#Plot results of pc algorithm
-plot(pc.data, main=paste("PC Estimated network with alpha: ", 0.05))
-current_amat <- as(pc.data, "amat")
-g_graph <- graph_from_adjacency_matrix(current_amat)
-plot.igraph(g_graph,vertex.size=25 ,main=paste("PC Estimated network with alpha 0.05"))
-
-####BN#### #Need matrix?
-copy_Month_data = subset(copy_Month_data, select = -c(RECPROUSM156N) )
-#which(is.na(copy_Month_data), arr.ind=TRUE)
-res = gs(copy_Month_data)
-plot(res)
-#dataset <- BNDataset(data = Monthly_data,  discreteness = rep(F, ncol(Monthly_data)), variables = names(Monthly_data), node.sizes = rep(3, ncol(Monthly_data)))
-#BN(Monthly_data)
-#learn.network(Monthly_data)
